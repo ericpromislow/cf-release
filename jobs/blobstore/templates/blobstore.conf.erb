@@ -31,6 +31,18 @@ server {
     alias /var/vcap/store/shared/;
   }
 
+  location /sign {
+    auth_basic "Restricted Area";
+    auth_basic_user_file htpasswd;
+
+    #Catch the 404 once authentication is done, and redirect request to url signer
+    error_page 404 = @url_signer;
+  }
+
+  location @url_signer {
+    proxy_pass http://127.0.0.1:8080$request_uri;
+   }
+
   # ensure the contents of this location block always match the public server /read/ location block
   location /read/ {
     if ( $request_method !~ ^(GET|HEAD)$ ) {
